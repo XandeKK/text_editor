@@ -112,3 +112,8 @@ function formatAnsiToTailwind(text) {
     // Retorna o texto formatado
     return text;
 }
+
+window.addEventListener('beforeunload', function (e) {
+    e.preventDefault();
+    e.returnValue = '';
+});
