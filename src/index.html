@@ -6,6 +6,7 @@
 	<title>Editor text</title>
 	<link href="/output.css" rel="stylesheet">
 	<script src="alert.js"></script>
+	<script src="canvas.js"></script>
 </head>
 <body class="bg-gray-200">
 	<div id="alerts" class="flex flex-col gap-1 fixed right-2 top-2"></div>
@@ -29,7 +30,7 @@
 			<textarea id="text" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 basis-5/6" placeholder="Write your thoughts here..."></textarea>
 			<button id="save" type="button" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5">Save</button>
 			<div class="basis-1/6">
-	            <input type="text" id="translate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 mb-2" placeholder="Translate">
+	            <textarea id="translate" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 mb-2" placeholder="Translate"></textarea>
 				<div id="result" class="bg-gray-50 p-2 border rounded h-52 overflow-y-auto text-sm">
 					Result
 				</div>

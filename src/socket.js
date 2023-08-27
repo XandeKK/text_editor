@@ -2,11 +2,13 @@ class Socket {
     constructor() {
         this.socket = new WebSocket('ws://localhost:8080');
         this.handler = {
+            tesseract: this.tesseract.bind(this),
             translate: this.translate,
             images: this.images,
             error: this.get_error,
             message: this.get_message
         };
+        this.translate_el = document.getElementById('translate');
 
         this.socket_event();
         this.event();
@@ -53,6 +55,20 @@ class Socket {
         };
     }
 
+    tesseract(data) {
+        let msg = data.msg;
+        // to lower case
+        msg = msg.toLowerCase();
+        // remove breakline
+        msg = msg.replaceAll('\n', ' ');
+        // remove duplicate spacewhite
+        msg = msg.replaceAll('  ', ' ');
+        this.translate_el.value = msg;
+        this.translate_el.dispatchEvent(new Event('change'));
+
+        navigator.clipboard.writeText(`Tradução de "${msg}"`);
+    }
+
     images(msg) {
         const images = document.getElementById('images');
         images.innerHTML = '';
@@ -63,14 +79,25 @@ class Socket {
             const div = document.createElement('div');
             div.className = 'flex mb-2'
 
-            const img_tag = document.createElement('img');
+            const canvas = document.createElement('canvas');
+            canvas.width = images.offsetWidth;
+
+            const ctx = canvas.getContext('2d');
+            const img_tag = new Image();
             img_tag.src = msg.popped_images + '/' + img;
+            img_tag.onload = function() {
+                const _canvas = new Canvas(canvas, img_tag);
+                _canvas.init();
+
+                canvas.height = canvas.width * (img_tag.height / img_tag.width);
+                ctx.drawImage(img_tag, 0, 0, canvas.width, canvas.height);
+            }
 
             const number = document.createElement('span');
             number.textContent = i + 1;
             number.className = 'p-2 text-3xl'
 
-            div.appendChild(img_tag);
+            div.appendChild(canvas);
             div.appendChild(number);
 
             images.appendChild(div);
@@ -80,6 +107,7 @@ class Socket {
             document.getElementById('text').value = msg.text;
         }
     }
+
 
     translate(msg) {
         const result = document.getElementById('result');
@@ -109,7 +137,6 @@ function formatAnsiToTailwind(text) {
     text = text.replace(/\u001b\[24m/g, '</span>');
     text = text.replace(/\n/g, '<br>');
 
-    // Retorna o texto formatado
     return text;
 }
 

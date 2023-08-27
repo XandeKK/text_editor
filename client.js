@@ -10,7 +10,35 @@ module.exports = function(serveStatic) {
 	server.on('connection', (socket) => {
 		socket.on('message', (message) => {
 			const msg = JSON.parse(message);
-			if (msg.type === 'translate') {
+			if (msg.type === 'tesseract') {
+				let base64Data = msg.dataUrl.replace(/^data:image\/png;base64,/, "");
+
+				fs.writeFile("/tmp/image.png", base64Data, 'base64', function(err) {
+					if (err) {
+						console.error(err);
+						socket.send(JSON.stringify({
+							type: 'tesseract',
+							msg: 'Erro ao salvar a imagem.'
+						}));
+					} else {
+						exec('tesseract /tmp/image.png stdout --dpi 300 --psm 4', (error, stdout, stderr) => {
+							if (error) {
+								console.error(`Erro ao executar tesseract: ${error}`);
+								socket.send(JSON.stringify({
+									type: 'tesseract',
+									msg: 'Erro ao executar tesseract.'
+								}));
+							} else {
+								socket.send(JSON.stringify({
+									type: 'tesseract',
+									msg: stdout
+								}));
+							}
+						});
+					}
+				});
+			}
+			else if (msg.type === 'translate') {
 				exec(`trans :pt "${msg.text}"`, (error, stdout, stderr) => {
 					socket.send(JSON.stringify({
 						type: 'translate',
