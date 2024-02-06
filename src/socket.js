@@ -57,21 +57,39 @@ class Socket {
 
     tesseract(data) {
         let msg = data.msg;
-        // to lower case
         msg = msg.toLowerCase();
-        // remove breakline
         msg = msg.replaceAll('\n', ' ');
-        // remove duplicate spacewhite
-        msg = msg.replaceAll('  ', ' ');
+        msg = msg.replaceAll(/  +/g, ' ');
+        msg = msg.trim();
+
         this.translate_el.value = msg;
         this.translate_el.dispatchEvent(new Event('change'));
 
-        navigator.clipboard.writeText(`Tradução de "${msg}"`);
+        copyToClipboard(`Tradução de "${msg}"`);
     }
 
     images(msg) {
         const images = document.getElementById('images');
         images.innerHTML = '';
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const canvas = entry.target;
+                    const ctx = canvas.getContext('2d');
+                    const img_tag = new Image();
+                    img_tag.src = canvas.dataset.src;
+                    img_tag.onload = function() {
+                        const _canvas = new Canvas(canvas, img_tag);
+                        _canvas.init();
+
+                        canvas.height = canvas.width * (img_tag.height / img_tag.width);
+                        ctx.drawImage(img_tag, 0, 0, canvas.width, canvas.height);
+                    }
+                    observer.unobserve(canvas);
+                }
+            });
+        });
 
         for (var i = 0; i < msg.images.length; i++) {
             const img = msg.images[i]
@@ -81,17 +99,10 @@ class Socket {
 
             const canvas = document.createElement('canvas');
             canvas.width = images.offsetWidth;
+            canvas.height = 5000;
+            canvas.dataset.src = msg.popped_images + '/' + img;
 
-            const ctx = canvas.getContext('2d');
-            const img_tag = new Image();
-            img_tag.src = msg.popped_images + '/' + img;
-            img_tag.onload = function() {
-                const _canvas = new Canvas(canvas, img_tag);
-                _canvas.init();
-
-                canvas.height = canvas.width * (img_tag.height / img_tag.width);
-                ctx.drawImage(img_tag, 0, 0, canvas.width, canvas.height);
-            }
+            observer.observe(canvas);
 
             const number = document.createElement('span');
             number.textContent = i + 1;
@@ -107,7 +118,6 @@ class Socket {
             document.getElementById('text').value = msg.text;
         }
     }
-
 
     translate(msg) {
         const result = document.getElementById('result');
@@ -144,3 +154,24 @@ window.addEventListener('beforeunload', function (e) {
     e.preventDefault();
     e.returnValue = '';
 });
+
+const copyToClipboard = (text) => {
+    if (window.isSecureContext && navigator.clipboard) {
+        navigator.clipboard.writeText(text);
+    } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+            document.execCommand('copy');
+            console.log('Texto copiado para a área de transferência');
+        } catch (err) {
+            console.error('Erro ao copiar texto para a área de transferência', err);
+        }
+
+        document.body.removeChild(textArea);
+    }
+};

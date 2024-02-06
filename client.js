@@ -39,7 +39,7 @@ module.exports = function(serveStatic) {
 				});
 			}
 			else if (msg.type === 'translate') {
-				exec(`trans :pt "${msg.text}"`, (error, stdout, stderr) => {
+				exec(`trans :pt en: "${msg.text}"`, (error, stdout, stderr) => {
 					socket.send(JSON.stringify({
 						type: 'translate',
 						text: stdout
@@ -61,11 +61,11 @@ module.exports = function(serveStatic) {
 					return a - b;
 				});
 
-				const has_text = fs.existsSync(path.join(msg.folder_traducao, 'Tradução'));
+				const has_text = fs.existsSync(path.join(msg.folder_traducao, 'text.txt'));
 				let text;
 
 				if (has_text) {
-					text = fs.readFileSync(path.join(msg.folder_traducao, 'Tradução'), 'utf8');
+					text = fs.readFileSync(path.join(msg.folder_traducao, 'text.txt'), 'utf8');
 				}
 
 				socket.send(JSON.stringify({
@@ -76,7 +76,7 @@ module.exports = function(serveStatic) {
 					text: text
 				}));
 			} else if (msg.type === 'save') {
-				fs.writeFile(path.join(msg.folder_traducao, 'Tradução'), msg.text, err => {
+				fs.writeFile(path.join(msg.folder_traducao, 'text.txt'), msg.text, err => {
 					if (err) {
 						socket.send(JSON.stringify({
 							type: 'error',
